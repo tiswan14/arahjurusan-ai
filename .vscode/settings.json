@@ -1,0 +1,5 @@
+{
+    "tailwindCSS.lint.suggestCanonicalClasses": "ignore",
+    "prisma.validate": false,
+    "prisma.schemaValidation": false
+}
