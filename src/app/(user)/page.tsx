@@ -1,4 +1,4 @@
-import WhySection from "@/components/user/About";
+import WhySection from "@/components/user/Why";
 import FinalCTASection from "@/components/user/Cta";
 import FAQSection from "@/components/user/Faq";
 import Hero from "@/components/user/Hero";

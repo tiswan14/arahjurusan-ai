@@ -13,7 +13,7 @@ import {
     Target,
     Rocket
 } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '../ui/button'
 import Link from 'next/link'
 
@@ -77,6 +77,26 @@ export default function HowItWorksSection() {
     const y1 = useTransform(scrollYProgress, [0, 1], [0, -30])
     const y2 = useTransform(scrollYProgress, [0, 1], [0, 30])
     const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.2, 0.4, 0.2])
+    type Particle = {
+        x: number
+        y: number
+        scale: number
+    }
+
+    const [particles, setParticles] = useState<Particle[]>([])
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        const generated = Array.from({ length: 6 }).map(() => ({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            scale: 0.5 + Math.random() * 0.5,
+        }))
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setParticles(generated)
+        setMounted(true)
+    }, [])
 
     return (
         <section ref={containerRef} className='relative py-24 sm:py-32 bg-background overflow-hidden border-t border-border'>
@@ -92,32 +112,37 @@ export default function HowItWorksSection() {
             />
 
             {/* Floating Particles */}
-            <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-                {[...Array(6)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        className='absolute text-primary/5'
-                        initial={{
-                            x: Math.random() * 1000,
-                            y: Math.random() * 800,
-                            rotate: 0,
-                            scale: 0.5 + Math.random() * 0.5
-                        }}
-                        animate={{
-                            y: [null, -40, 40, -40],
-                            rotate: 360,
-                            x: [null, 20, -20, 20]
-                        }}
-                        transition={{
-                            duration: 20 + i * 2,
-                            repeat: Infinity,
-                            ease: "linear"
-                        }}
-                    >
-                        {i % 2 === 0 ? <BrainCircuit size={40} /> : <Sparkles size={35} />}
-                    </motion.div>
-                ))}
-            </div>
+            {mounted && (
+                <div className='absolute inset-0 overflow-hidden pointer-events-none'>
+                    {particles.map((p, i) => (
+                        <motion.div
+                            key={i}
+                            className='absolute text-primary/5'
+                            initial={{
+                                x: p.x,
+                                y: p.y,
+                                rotate: 0,
+                                scale: p.scale,
+                            }}
+                            animate={{
+                                y: [null, -40, 40, -40],
+                                rotate: 360,
+                                x: [null, 20, -20, 20],
+                            }}
+                            transition={{
+                                duration: 20 + i * 2,
+                                repeat: Infinity,
+                                ease: 'linear',
+                            }}
+                        >
+                            {i % 2 === 0
+                                ? <BrainCircuit size={40} />
+                                : <Sparkles size={35} />}
+                        </motion.div>
+                    ))}
+                </div>
+            )}
+
 
             <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 

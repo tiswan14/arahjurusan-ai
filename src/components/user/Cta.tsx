@@ -4,7 +4,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowRight, Sparkles, CheckCircle2, Users, Clock, Zap, Star, GraduationCap, Brain, Target, Rocket } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function FinalCTASection() {
     const containerRef = useRef(null)
@@ -16,6 +16,24 @@ export default function FinalCTASection() {
     const y1 = useTransform(scrollYProgress, [0, 1], [0, -50])
     const y2 = useTransform(scrollYProgress, [0, 1], [0, 50])
     const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.3, 0.6, 0.3])
+    type FloatingIcon = {
+        x: string
+        y: string
+    }
+
+    const [floatingIcons, setFloatingIcons] = useState<FloatingIcon[]>([])
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        const generated = Array.from({ length: 6 }).map(() => ({
+            x: `${Math.random() * 100}vw`,
+            y: `${Math.random() * 100}vh`,
+        }))
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setFloatingIcons(generated)
+        setMounted(true)
+    }, [])
 
     return (
         <section ref={containerRef} className='relative py-32 bg-background border-t border-border overflow-hidden'>
@@ -37,36 +55,42 @@ export default function FinalCTASection() {
             />
 
             {/* Floating Icons Background */}
-            <div className='absolute inset-0 overflow-hidden'>
-                {[...Array(6)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        className='absolute'
-                        initial={{
-                            // eslint-disable-next-line react-hooks/purity
-                            x: Math.random() * window.innerWidth,
-                            // eslint-disable-next-line react-hooks/purity
-                            y: Math.random() * window.innerHeight,
-                            rotate: 0
-                        }}
-                        animate={{
-                            y: [null, -30, 30, -30],
-                            rotate: 360
-                        }}
-                        transition={{
-                            duration: 20 + i * 2,
-                            repeat: Infinity,
-                            ease: "linear"
-                        }}
-                    >
-                        <div className='text-primary/5'>
-                            {i % 3 === 0 ? <Brain size={48} /> :
-                                i % 3 === 1 ? <Target size={48} /> :
-                                    <Rocket size={48} />}
-                        </div>
-                    </motion.div>
-                ))}
-            </div>
+            {mounted && (
+                <div className='absolute inset-0 overflow-hidden'>
+                    {floatingIcons.map((p, i) => (
+                        <motion.div
+                            key={i}
+                            className='absolute'
+                            initial={{
+                                x: p.x,
+                                y: p.y,
+                                rotate: 0,
+                            }}
+                            animate={{
+                                y: ['0vh', '-5vh', '5vh', '-5vh'],
+                                rotate: 360,
+                            }}
+                            transition={{
+                                duration: 20 + i * 2,
+                                repeat: Infinity,
+                                ease: 'linear',
+                            }}
+                        >
+                            <div className='text-primary/5'>
+                                {i % 3 === 0 ? (
+                                    <Brain size={48} />
+                                ) : i % 3 === 1 ? (
+                                    <Target size={48} />
+                                ) : (
+                                    <Rocket size={48} />
+                                )}
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            )}
+
+
 
             <div className='relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8'>
 

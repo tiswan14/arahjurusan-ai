@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 
 import {
@@ -7,12 +8,11 @@ import {
     AccordionTrigger,
 } from '@/components/ui/accordion'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
     HelpCircle,
     MessageCircle,
     Mail,
-    Sparkles,
     Search,
     ArrowRight,
     CheckCircle2,
@@ -100,6 +100,25 @@ export default function FAQSection() {
         return matchesCategory && matchesSearch
     })
 
+    type FloatingIcon = {
+        x: string
+        y: string
+    }
+
+    const [floatingIcons, setFloatingIcons] = useState<FloatingIcon[]>([])
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        const generated = Array.from({ length: 5 }).map(() => ({
+            x: `${Math.random() * 100}vw`,
+            y: `${Math.random() * 100}vh`,
+        }))
+
+        setFloatingIcons(generated)
+        setMounted(true)
+    }, [])
+
+
     return (
         <section ref={sectionRef} className='relative py-28 bg-slate-900 border-t border-border overflow-hidden'>
 
@@ -114,32 +133,40 @@ export default function FAQSection() {
             />
 
             {/* Floating Icons */}
-            <div className='absolute inset-0 overflow-hidden'>
-                {[...Array(5)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        className='absolute text-primary/5'
-                        initial={{
-                            x: Math.random() * window.innerWidth,
-                            y: Math.random() * window.innerHeight,
-                            rotate: 0
-                        }}
-                        animate={{
-                            y: [null, -30, 30, -30],
-                            rotate: 360
-                        }}
-                        transition={{
-                            duration: 20 + i * 2,
-                            repeat: Infinity,
-                            ease: "linear"
-                        }}
-                    >
-                        {i % 3 === 0 ? <HelpCircle size={40} /> :
-                            i % 3 === 1 ? <MessageSquare size={35} /> :
-                                <Headphones size={45} />}
-                    </motion.div>
-                ))}
-            </div>
+            {mounted && (
+                <div className='absolute inset-0 overflow-hidden'>
+                    {floatingIcons.map((p, i) => (
+                        <motion.div
+                            key={i}
+                            className='absolute text-primary/5'
+                            initial={{
+                                x: p.x,
+                                y: p.y,
+                                rotate: 0,
+                            }}
+                            animate={{
+                                y: ['0vh', '-5vh', '5vh', '-5vh'],
+                                rotate: 360,
+                            }}
+                            transition={{
+                                duration: 20 + i * 2,
+                                repeat: Infinity,
+                                ease: 'linear',
+                            }}
+                        >
+                            {i % 3 === 0 ? (
+                                <HelpCircle size={40} />
+                            ) : i % 3 === 1 ? (
+                                <MessageSquare size={35} />
+                            ) : (
+                                <Headphones size={45} />
+                            )}
+                        </motion.div>
+                    ))}
+                </div>
+            )}
+
+
 
             <div className='relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8'>
 
@@ -223,8 +250,8 @@ export default function FAQSection() {
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => setActiveCategory(category.id)}
                                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${activeCategory === category.id
-                                        ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg'
-                                        : 'bg-card/50 text-muted-foreground hover:text-primary border border-border'
+                                    ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg'
+                                    : 'bg-card/50 text-muted-foreground hover:text-primary border border-border'
                                     }`}
                             >
                                 <category.icon className='w-3 h-3' />

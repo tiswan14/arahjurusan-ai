@@ -1,8 +1,7 @@
-/* eslint-disable react-hooks/purity */
 'use client'
 
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import {
     Brain,
     Target,
@@ -12,10 +11,8 @@ import {
     Users,
     Sparkles,
     CheckCircle2,
-    Award,
-    TrendingUp,
-    Zap,
-    Rocket} from 'lucide-react'
+} from 'lucide-react'
+
 
 const features = [
     {
@@ -80,12 +77,6 @@ const features = [
     },
 ]
 
-const highlights = [
-    { icon: Award, label: 'Terpercaya', value: 'Sejak 2023' },
-    { icon: TrendingUp, label: 'Tingkat Kepuasan', value: '98%' },
-    { icon: Zap, label: 'Kecepatan', value: 'Real-time' },
-    { icon: Rocket, label: 'Inovasi', value: 'AI Terkini' },
-]
 
 export default function WhySection() {
     const sectionRef = useRef<HTMLDivElement>(null)
@@ -100,6 +91,28 @@ export default function WhySection() {
     const y2 = useTransform(scrollYProgress, [0, 1], [0, 30])
     const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.2, 0.4, 0.2])
     const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1, 0.8])
+
+    type Particle = {
+        x: number
+        y: number
+        scale: number
+    }
+
+    const [particles, setParticles] = useState<Particle[]>([])
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        const generated = Array.from({ length: 8 }).map(() => ({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            scale: 0.3 + Math.random() * 0.4,
+        }))
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setParticles(generated)
+        setMounted(true)
+    }, [])
+
 
     return (
         <section ref={sectionRef} className='relative py-20 sm:py-28 bg-background border-t border-border overflow-hidden'>
@@ -119,33 +132,38 @@ export default function WhySection() {
             />
 
             {/* Floating Particles */}
-            <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-                {[...Array(8)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        className='absolute text-primary/5'
-                        initial={{
-                             
-                            x: Math.random() * 1200,
-                            y: Math.random() * 800,
-                            rotate: 0,
-                            scale: 0.3 + Math.random() * 0.4
-                        }}
-                        animate={{
-                            y: [null, -50, 50, -50],
-                            rotate: 360,
-                            x: [null, 30, -30, 30]
-                        }}
-                        transition={{
-                            duration: 15 + i * 2,
-                            repeat: Infinity,
-                            ease: "linear"
-                        }}
-                    >
-                        {i % 2 === 0 ? <Brain size={30} /> : <Target size={25} />}
-                    </motion.div>
-                ))}
-            </div>
+            {mounted && (
+                <div className='absolute inset-0 overflow-hidden pointer-events-none'>
+                    {particles.map((p, i) => (
+                        <motion.div
+                            key={i}
+                            className='absolute text-primary/5'
+                            initial={{
+                                x: p.x,
+                                y: p.y,
+                                rotate: 0,
+                                scale: p.scale,
+                            }}
+                            animate={{
+                                y: [null, -50, 50, -50],
+                                rotate: 360,
+                                x: [null, 30, -30, 30],
+                            }}
+                            transition={{
+                                duration: 15 + i * 2,
+                                repeat: Infinity,
+                                ease: 'linear',
+                            }}
+                        >
+                            {i % 2 === 0
+                                ? <Brain size={30} />
+                                : <Target size={25} />}
+                        </motion.div>
+                    ))}
+                </div>
+            )}
+
+
 
             <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 
@@ -199,29 +217,6 @@ export default function WhySection() {
                         Sistem berbasis AI yang membantu siswa menentukan jurusan
                         secara objektif, cepat, dan berbasis data.
                     </motion.p>
-                </motion.div>
-
-                {/* Highlights Bar */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.4 }}
-                    className='mt-12 flex flex-wrap justify-center gap-6'
-                >
-                    {highlights.map((item, i) => (
-                        <motion.div
-                            key={i}
-                            whileHover={{ scale: 1.05, y: -2 }}
-                            className='flex items-center gap-3 px-4 py-2 bg-card/50 rounded-xl border border-border'
-                        >
-                            <item.icon className='w-4 h-4 text-primary' />
-                            <div>
-                                <span className='text-sm font-semibold text-foreground'>{item.value}</span>
-                                <span className='text-xs text-muted-foreground/60 ml-1'>{item.label}</span>
-                            </div>
-                        </motion.div>
-                    ))}
                 </motion.div>
 
                 {/* Main Features Grid */}

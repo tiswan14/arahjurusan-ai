@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
     GraduationCap,
     Mail,
@@ -30,6 +30,27 @@ export default function Footer() {
     const y = useTransform(scrollYProgress, [0, 1], [100, 0])
     const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 0.5, 1])
 
+    type FloatingParticle = {
+        x: number
+        y: number
+    }
+
+    const [floating, setFloating] = useState<FloatingParticle[]>([])
+    const [mounted, setMounted] = useState(false)
+    const [year, setYear] = useState<number | null>(null)
+
+    useEffect(() => {
+        const generated = Array.from({ length: 3 }).map(() => ({
+            x: Math.random() * 1000,
+            y: Math.random() * 500,
+        }))
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setFloating(generated)
+        setYear(new Date().getFullYear())
+        setMounted(true)
+    }, [])
+
     return (
         <footer ref={footerRef} className='relative bg-background border-t border-border overflow-hidden'>
 
@@ -45,32 +66,33 @@ export default function Footer() {
                 />
 
                 {/* Floating Particles */}
-                {[...Array(3)].map((_, i) => (
+                {mounted && floating.map((p, i) => (
                     <motion.div
                         key={i}
                         className='absolute text-primary/5'
                         initial={{
-                            // eslint-disable-next-line react-hooks/purity
-                            x: Math.random() * 1000,
-                            // eslint-disable-next-line react-hooks/purity
-                            y: Math.random() * 500,
-                            rotate: 0
+                            x: p.x,
+                            y: p.y,
+                            rotate: 0,
                         }}
                         animate={{
                             y: [null, -20, 20, -20],
-                            rotate: 360
+                            rotate: 360,
                         }}
                         transition={{
                             duration: 15 + i * 3,
                             repeat: Infinity,
-                            ease: "linear"
+                            ease: 'linear',
                         }}
                     >
-                        {i === 0 ? <GraduationCap size={32} /> :
-                            i === 1 ? <Target size={28} /> :
-                                <Rocket size={30} />}
+                        {i === 0
+                            ? <GraduationCap size={32} />
+                            : i === 1
+                                ? <Target size={28} />
+                                : <Rocket size={30} />}
                     </motion.div>
                 ))}
+
             </div>
 
             <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20'>
@@ -313,7 +335,7 @@ export default function Footer() {
                             whileHover={{ scale: 1.02 }}
                             className='text-sm text-muted-foreground'
                         >
-                            © {new Date().getFullYear()} ArahJurusan AI. All rights reserved.
+                            © {year} ArahJurusan AI. All rights reserved.
                         </motion.p>
 
                         <motion.div
@@ -357,3 +379,4 @@ export default function Footer() {
         </footer>
     )
 }
+

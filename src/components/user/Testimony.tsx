@@ -1,8 +1,9 @@
-/* eslint-disable react-hooks/purity */
+/* eslint-disable react-hooks/set-state-in-effect */
+ 
 'use client'
 
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Star, Quote, Users, Award, ChevronRight, MessageCircle, Sparkles, TrendingUp, Heart } from 'lucide-react'
 
 const testimonials = [
@@ -77,6 +78,23 @@ export default function TestimonialSection() {
     const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.3, 0.6, 0.3])
 
     const displayedTestimonials = showAll ? testimonials : testimonials.slice(0, 3)
+    type Floating = {
+        x: string
+        y: string
+    }
+
+    const [floating, setFloating] = useState<Floating[]>([])
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        const generated = Array.from({ length: 4 }).map(() => ({
+            x: `${Math.random() * 100}vw`,
+            y: `${Math.random() * 100}vh`,
+        }))
+
+        setFloating(generated)
+        setMounted(true)
+    }, [])
 
     return (
         <section ref={sectionRef} className='relative py-28 bg-background border-t border-border overflow-hidden'>
@@ -92,30 +110,36 @@ export default function TestimonialSection() {
             />
 
             {/* Floating Elements */}
-            <div className='absolute inset-0 overflow-hidden'>
-                {[...Array(4)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        className='absolute text-primary/5'
-                        initial={{
-                            x: Math.random() * window.innerWidth,
-                            y: Math.random() * window.innerHeight,
-                            rotate: 0
-                        }}
-                        animate={{
-                            y: [null, -40, 40, -40],
-                            rotate: 360
-                        }}
-                        transition={{
-                            duration: 25 + i * 3,
-                            repeat: Infinity,
-                            ease: "linear"
-                        }}
-                    >
-                        {i % 2 === 0 ? <Quote size={48} /> : <MessageCircle size={40} />}
-                    </motion.div>
-                ))}
-            </div>
+            {mounted && (
+                <div className='absolute inset-0 overflow-hidden'>
+                    {floating.map((p, i) => (
+                        <motion.div
+                            key={i}
+                            className='absolute text-primary/5'
+                            initial={{
+                                x: p.x,
+                                y: p.y,
+                                rotate: 0,
+                            }}
+                            animate={{
+                                y: ['0vh', '-5vh', '5vh', '-5vh'],
+                                rotate: 360,
+                            }}
+                            transition={{
+                                duration: 25 + i * 3,
+                                repeat: Infinity,
+                                ease: 'linear',
+                            }}
+                        >
+                            {i % 2 === 0
+                                ? <Quote size={48} />
+                                : <MessageCircle size={40} />}
+                        </motion.div>
+                    ))}
+                </div>
+            )}
+
+
 
             <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 
