@@ -4,11 +4,10 @@ import { jwtVerify } from 'jose'
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET)
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
     const token = req.cookies.get('token')?.value
     const { pathname } = req.nextUrl
 
-    // Public login route
     if (pathname === '/login') {
         if (!token) return NextResponse.next()
 
@@ -25,7 +24,6 @@ export async function middleware(req: NextRequest) {
         }
     }
 
-    // Protected routes
     if (pathname === '/' || pathname.startsWith('/dashboard')) {
         if (!token) {
             return NextResponse.redirect(new URL('/login', req.url))
@@ -34,12 +32,10 @@ export async function middleware(req: NextRequest) {
         try {
             const { payload } = await jwtVerify(token, secret)
 
-            // Admin only page
             if (pathname.startsWith('/dashboard') && payload.role !== 'admin') {
                 return NextResponse.redirect(new URL('/', req.url))
             }
 
-            // User only page
             if (pathname === '/' && payload.role !== 'user') {
                 return NextResponse.redirect(new URL('/dashboard', req.url))
             }
@@ -54,5 +50,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/', '/dashboard', '/login'],
+    matcher: ['/', '/dashboard/:path*', '/login'],
 }

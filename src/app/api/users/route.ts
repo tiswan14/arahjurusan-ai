@@ -14,21 +14,29 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url)
 
-    const page = Number(searchParams.get('page') ?? 1)
-    const limit = Number(searchParams.get('limit') ?? 10)
+    const page = Math.max(Number(searchParams.get('page') ?? 1), 1)
+    const limit = Math.max(Number(searchParams.get('limit') ?? 10), 1)
     const search = searchParams.get('search') ?? ''
-    const sort = searchParams.get('sort') === 'asc' ? 'asc' : 'desc'
+    const sortByParam = searchParams.get('sortBy') ?? 'createdAt'
+    const orderParam = searchParams.get('order') === 'asc' ? 'asc' : 'desc'
+
+    const allowedSortFields = ['createdAt', 'nama'] as const
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sortBy = allowedSortFields.includes(sortByParam as any)
+        ? sortByParam
+        : 'createdAt'
 
     const skip = (page - 1) * limit
-
     const whereCondition = {
         role: 'user',
-        ...(search && {
-            OR: [
-                { nama: { contains: search } },
-                { email: { contains: search } },
-            ],
-        }),
+        ...(search
+            ? {
+                OR: [
+                    { nama: { contains: search } },
+                    { email: { contains: search } },
+                ],
+            }
+            : {}),
     }
 
     const [users, total] = await Promise.all([
@@ -37,7 +45,7 @@ export async function GET(req: Request) {
             skip,
             take: limit,
             orderBy: {
-                createdAt: sort,
+                [sortBy]: orderParam,
             },
             select: {
                 id: true,
@@ -59,8 +67,10 @@ export async function GET(req: Request) {
             limit,
             total,
             totalPages: Math.ceil(total / limit),
-            sort,
+            sortBy,
+            order: orderParam,
         },
     })
 }
+
 
