@@ -21,7 +21,7 @@ export async function POST(req: Request) {
             headerList.get('x-real-ip') ??
             'unknown'
 
-        const limiter = rateLimit(ip, 3, 60 * 1000)
+        const limiter = rateLimit(ip, 30, 60 * 1000)
 
         if (!limiter.allowed) {
             return NextResponse.json(

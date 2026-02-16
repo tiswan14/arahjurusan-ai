@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import { ToastContainer } from "react-toastify";
+import { AuthProvider } from '@/context/auth-context'
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -26,8 +28,21 @@ export default function RootLayout({
         className={`${poppins.variable} font-sans antialiased bg-[#f8fafc] text-[#0f172a]`}
         style={{ fontFamily: 'var(--font-poppins)' }}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+
+        <ToastContainer
+          position='top-right'
+          autoClose={3000}
+          hideProgressBar
+          newestOnTop
+          closeOnClick
+          pauseOnHover
+          theme='light'
+        />
       </body>
+
     </html>
   );
 }

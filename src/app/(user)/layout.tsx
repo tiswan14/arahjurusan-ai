@@ -1,6 +1,6 @@
 import Footer from '@/components/Footer'
 import FooterSection from '@/components/Footer'
-import Navbar from '@/components/Navbar'
+import Navbar from '@/components/user/navbar/Navbar'
 
 export default function UserLayout({
     children,
