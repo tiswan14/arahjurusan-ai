@@ -23,7 +23,6 @@ import {
   User,
   Shield,
   Sparkles,
-  Users,
 } from 'lucide-react'
 
 export type User = {

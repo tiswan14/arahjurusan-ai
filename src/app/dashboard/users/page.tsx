@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import {
-  Users} from 'lucide-react'
+  Users
+} from 'lucide-react'
 import { useUsers } from '@/components/admin/users/use-users'
 import { UsersTable } from '@/components/admin/users/table'
 import { UsersToolbar } from '@/components/admin/users/toolbar'
