@@ -1,92 +1,10 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { useAuth } from '@/context/auth-context'
+import { LoginForm } from '@/components/auth/login/login-form'
 import { motion } from 'framer-motion'
-import { Mail, Lock, ArrowRight, GraduationCap, EyeOff, Eye } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
-import { toast } from 'react-toastify'
-
-type LoginResponse = {
-    message?: string
-    role: 'admin' | 'user'
-}
+import { GraduationCap } from 'lucide-react'
 
 const LoginPage = () => {
-    const router = useRouter()
-    const abortRef = useRef<AbortController | null>(null)
-    const { refetch } = useAuth()
-    const [email, setEmail] = useState<string>('')
-    const [password, setPassword] = useState<string>('')
-    const [loading, setLoading] = useState<boolean>(false)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [error, setError] = useState<string | null>(null)
-    const [showPassword, setShowPassword] = useState(false)
-
-
-    useEffect(() => {
-        return () => {
-            abortRef.current?.abort()
-        }
-    }, [])
-
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-
-        if (loading) return
-
-        setLoading(true)
-
-        const controller = new AbortController()
-        abortRef.current = controller
-
-        try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    email,
-                    password,
-                }),
-                signal: controller.signal,
-            })
-
-            const data = (await res.json()) as LoginResponse
-
-            if (!res.ok) {
-                throw new Error(data?.message ?? 'Login gagal')
-            }
-
-            toast.success('Login berhasil')
-
-            await refetch()
-
-            if (data.role === 'admin') {
-                router.replace('/dashboard')
-            } else {
-                router.replace('/')
-            }
-        } catch (err: unknown) {
-            if (err instanceof DOMException && err.name === 'AbortError') return
-
-            const message =
-                err instanceof Error
-                    ? err.message
-                    : 'Terjadi kesalahan saat login'
-
-            toast.error(message)
-        } finally {
-            setLoading(false)
-        }
-    }
-
     return (
         <div className='min-h-screen flex bg-background text-foreground'>
             {/* Left Section */}
@@ -156,88 +74,7 @@ const LoginPage = () => {
                         </p>
                     </div>
 
-                    {/* Card */}
-                    <Card className='bg-card border-border shadow-xl rounded-[var(--radius)]'>
-                        <CardContent className='px-6 py-10 lg:p-10 space-y-5 lg:space-y-6'>
-                            <form onSubmit={handleSubmit} className='space-y-6'>
-                                {/* Email */}
-                                <div className='relative'>
-                                    <Mail className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none' />
-                                    <Input
-                                        type='email'
-                                        required
-                                        autoComplete='email'
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder='Masukan Email'
-                                        className='pl-10 bg-background border-border focus-visible:ring-primary focus-visible:ring-2'
-                                    />
-                                </div>
-
-                                {/* Password */}
-                                <div className='relative'>
-                                    <Lock className='absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none' />
-
-                                    <Input
-                                        type={showPassword ? 'text' : 'password'}
-                                        required
-                                        autoComplete='current-password'
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder='Masukan Password'
-                                        className='pl-11 pr-12 bg-background border-border focus-visible:ring-primary focus-visible:ring-2'
-                                    />
-
-                                    <button
-                                        type='button'
-                                        onClick={() => setShowPassword((prev) => !prev)}
-                                        className='absolute right-4 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-primary transition'
-                                    >
-                                        {showPassword ? (
-                                            <EyeOff className='w-4 h-4' />
-                                        ) : (
-                                            <Eye className='w-4 h-4' />
-                                        )}
-                                    </button>
-                                </div>
-
-
-
-                                {error && (
-                                    <div className='text-sm text-error bg-error/10 border border-error/30 rounded-[var(--radius)] p-3'>
-                                        {error}
-                                    </div>
-                                )}
-
-                                <Button
-                                    type='submit'
-                                    disabled={loading}
-                                    className='w-full bg-primary text-primary-foreground hover:opacity-90'
-                                >
-                                    {loading ? (
-                                        <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin' />
-                                    ) : (
-                                        <>
-                                            Masuk
-                                            <ArrowRight className='w-4 h-4 ml-2' />
-                                        </>
-                                    )}
-                                </Button>
-
-                            </form>
-
-                            <p className='text-sm text-center text-muted-foreground'>
-                                Belum punya akun?{' '}
-                                <Link
-                                    href='/register'
-                                    className='text-primary hover:underline font-medium'
-                                >
-                                    Daftar sekarang
-                                </Link>
-                            </p>
-
-                        </CardContent>
-                    </Card>
+                    <LoginForm />
 
                 </motion.div>
             </div>
