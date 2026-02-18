@@ -118,18 +118,34 @@ export const UsersTable = ({
           <TableBody>
             {loading &&
               Array.from({ length: limit }).map((_, i) => (
-                <TableRow key={i} className='border-b border-slate-100'>
-                  <TableCell><Skeleton className='h-5 w-8' /></TableCell>
+                <TableRow
+                  key={i}
+                  className='border-b border-gray-100 bg-transparent'
+                >
+                  <TableCell>
+                    <Skeleton className='h-5 w-8 bg-gray-200/60' />
+                  </TableCell>
+
                   <TableCell>
                     <div className='flex items-center gap-3'>
-                      <Skeleton className='h-9 w-9 rounded-full' />
-                      <Skeleton className='h-5 w-32' />
+                      <Skeleton className='h-9 w-9 rounded-full bg-gray-200/60' />
+                      <Skeleton className='h-5 w-32 bg-gray-200/60' />
                     </div>
                   </TableCell>
-                  <TableCell><Skeleton className='h-5 w-48' /></TableCell>
-                  <TableCell><Skeleton className='h-6 w-20 rounded-full' /></TableCell>
-                  <TableCell><Skeleton className='h-5 w-32' /></TableCell>
+
+                  <TableCell>
+                    <Skeleton className='h-5 w-48 bg-gray-200/60' />
+                  </TableCell>
+
+                  <TableCell>
+                    <Skeleton className='h-6 w-20 rounded-full bg-gray-200/60' />
+                  </TableCell>
+
+                  <TableCell>
+                    <Skeleton className='h-5 w-32 bg-gray-200/60' />
+                  </TableCell>
                 </TableRow>
+
               ))}
 
             {!loading && users.length === 0 && (

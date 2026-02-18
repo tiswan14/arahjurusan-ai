@@ -56,6 +56,9 @@ export const JurusanTable = ({
   onEdit,
   onDelete,
 }: Props) => {
+
+
+
   return (
     <div className='bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/20 overflow-hidden backdrop-blur-sm'>
       <div className='overflow-x-auto'>
@@ -102,21 +105,28 @@ export const JurusanTable = ({
           <TableBody>
             {loading &&
               Array.from({ length: limit }).map((_, i) => (
-                <TableRow key={i} className='border-b border-slate-100'>
+                <TableRow
+                  key={i}
+                  className='border-b border-gray-100 bg-transparent'
+                >
                   <TableCell className='py-4'>
-                    <Skeleton className='h-5 w-8 rounded-lg' />
+                    <Skeleton className='h-5 w-8 rounded-md bg-gray-200/60' />
                   </TableCell>
+
                   <TableCell className='py-4'>
-                    <Skeleton className='h-5 w-40 rounded-lg' />
+                    <Skeleton className='h-5 w-40 rounded-md bg-gray-200/60' />
                   </TableCell>
+
                   <TableCell className='py-4'>
-                    <Skeleton className='h-6 w-20 rounded-full' />
+                    <Skeleton className='h-6 w-20 rounded-full bg-gray-200/60' />
                   </TableCell>
+
                   <TableCell className='py-4'>
-                    <Skeleton className='h-5 w-60 rounded-lg' />
+                    <Skeleton className='h-5 w-60 rounded-md bg-gray-200/60' />
                   </TableCell>
+
                   <TableCell className='py-4'>
-                    <Skeleton className='h-5 w-28 rounded-lg' />
+                    <Skeleton className='h-5 w-28 rounded-md bg-gray-200/60' />
                   </TableCell>
                 </TableRow>
               ))}

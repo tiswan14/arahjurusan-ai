@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 type Jurusan = {
   id: string
@@ -34,36 +34,44 @@ export const useJurusan = (
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
+  const fetchData = useCallback(async () => {
+    setLoading(true)
 
-      try {
-        const res = await fetch(
-          `/api/jurusan?page=${page}&limit=${limit}&search=${search}&sortBy=${sortBy}&order=${order}`,
-        )
+    try {
+      const res = await fetch(
+        `/api/jurusan?page=${page}&limit=${limit}&search=${search}&sortBy=${sortBy}&order=${order}`,
+      )
 
-        const json =
-          (await res.json()) as JurusanResponse
+      const json =
+        (await res.json()) as JurusanResponse
 
-        if (!json.success)
-          throw new Error('Gagal ambil data')
+      if (!json.success)
+        throw new Error('Gagal ambil data')
 
-        setData(json.data)
-        setTotalPages(json.meta.totalPages)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        setLoading(false)
-      }
+      setData(json.data)
+      setTotalPages(json.meta.totalPages)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoading(false)
     }
-
-    fetchData()
   }, [page, limit, search, sortBy, order])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  const removeLocal = (id: string) => {
+    setData(prev =>
+      prev.filter(item => item.id !== id),
+    )
+  }
 
   return {
     data,
     loading,
     totalPages,
+    refetch: fetchData,
+    removeLocal,
   }
 }

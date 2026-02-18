@@ -80,6 +80,7 @@ export const CreateJurusanModal = ({
     }
   }
 
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -103,7 +104,7 @@ export const CreateJurusanModal = ({
               placeholder='Contoh: Rekayasa Perangkat Lunak'
               value={nama}
               onChange={e => setNama(e.target.value)}
-              className='border-gray-200 focus:border-blue-400 focus:ring-blue-400 bg-gray-50/50'
+              className='text-black border-gray-200 focus:border-blue-400 focus:ring-blue-400 bg-gray-50/50'
             />
           </div>
 
@@ -115,7 +116,7 @@ export const CreateJurusanModal = ({
               placeholder='Contoh: RPL'
               value={alias}
               onChange={e => setAlias(e.target.value)}
-              className='border-gray-200 focus:border-blue-400 focus:ring-blue-400 bg-gray-50/50'
+              className='text-black border-gray-200 focus:border-blue-400 focus:ring-blue-400 bg-gray-50/50'
             />
             <p className='text-xs text-gray-400'>
               Singkatan atau kode untuk jurusan

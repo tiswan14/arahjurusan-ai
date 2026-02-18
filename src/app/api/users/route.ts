@@ -1,76 +1,41 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/auth'
+import { getUsers } from '@/services/user.service'
 
 export async function GET(req: Request) {
-    const admin = await requireRole('admin')
+    try {
+        const admin = await requireRole('admin')
 
-    if (!admin) {
+        if (!admin) {
+            return NextResponse.json(
+                { message: 'Akses ditolak' },
+                { status: 403 },
+            )
+        }
+
+        const { searchParams } = new URL(req.url)
+
+        const result = await getUsers({
+            page: Number(searchParams.get('page')) || undefined,
+            limit: Number(searchParams.get('limit')) || undefined,
+            search: searchParams.get('search') ?? '',
+            sortBy:
+                searchParams.get('sortBy') === 'nama'
+                    ? 'nama'
+                    : 'createdAt',
+            order:
+                searchParams.get('order') === 'asc'
+                    ? 'asc'
+                    : 'desc',
+        })
+
+        return NextResponse.json(result)
+    } catch (error) {
+        console.error('GET_USERS_ROUTE_ERROR', error)
+
         return NextResponse.json(
-            { message: 'Akses ditolak' },
-            { status: 403 },
+            { message: 'Terjadi kesalahan pada server' },
+            { status: 500 },
         )
     }
-
-    const { searchParams } = new URL(req.url)
-
-    const page = Math.max(Number(searchParams.get('page') ?? 1), 1)
-    const limit = Math.max(Number(searchParams.get('limit') ?? 10), 1)
-    const search = searchParams.get('search') ?? ''
-    const sortByParam = searchParams.get('sortBy') ?? 'createdAt'
-    const orderParam = searchParams.get('order') === 'asc' ? 'asc' : 'desc'
-
-    const allowedSortFields = ['createdAt', 'nama'] as const
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sortBy = allowedSortFields.includes(sortByParam as any)
-        ? sortByParam
-        : 'createdAt'
-
-    const skip = (page - 1) * limit
-    const whereCondition = {
-        role: 'user',
-        ...(search
-            ? {
-                OR: [
-                    { nama: { contains: search } },
-                    { email: { contains: search } },
-                ],
-            }
-            : {}),
-    }
-
-    const [users, total] = await Promise.all([
-        prisma.user.findMany({
-            where: whereCondition,
-            skip,
-            take: limit,
-            orderBy: {
-                [sortBy]: orderParam,
-            },
-            select: {
-                id: true,
-                nama: true,
-                email: true,
-                role: true,
-                createdAt: true,
-            },
-        }),
-        prisma.user.count({
-            where: whereCondition,
-        }),
-    ])
-
-    return NextResponse.json({
-        data: users,
-        meta: {
-            page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit),
-            sortBy,
-            order: orderParam,
-        },
-    })
 }
-
-

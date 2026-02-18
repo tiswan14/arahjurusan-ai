@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
 import { useState } from 'react'
@@ -6,7 +7,12 @@ import { useJurusan } from '@/components/admin/jurusan/use-jurusan'
 import { JurusanTable } from '@/components/admin/jurusan/table'
 import { JurusanToolbar } from '@/components/admin/jurusan/toolbar'
 import { Button } from '@/components/ui/button'
-import { CreateJurusanModal } from '@/components/admin/jurusan/create-modal'
+import { CreateJurusanModal } from '@/components/admin/jurusan/modal/create-modal'
+import { DetailJurusanModal } from '@/components/admin/jurusan/modal/detail-modal'
+import { EditJurusanModal } from '@/components/admin/jurusan/modal/edit-modal'
+import { DeleteJurusanModal } from '@/components/admin/jurusan/modal/delete-modal'
+import { toast } from 'react-toastify'
+import { useJurusanModals } from '@/components/admin/jurusan/modal/use-jurusan-modals'
 
 const Page = () => {
   const [open, setOpen] = useState(false)
@@ -24,6 +30,8 @@ const Page = () => {
     data,
     loading,
     totalPages,
+    removeLocal,
+    refetch,
   } = useJurusan(
     page,
     limit,
@@ -31,6 +39,80 @@ const Page = () => {
     sortBy,
     order,
   )
+
+  const {
+    createOpen,
+    setCreateOpen,
+    detailOpen,
+    detailId,
+    openDetail,
+    setDetailOpen,
+    editOpen,
+    editId,
+    openEdit,
+    setEditOpen,
+    deleteOpen,
+    deleteId,
+    openDelete,
+    setDeleteOpen,
+  } = useJurusanModals()
+
+
+  const [deleteLoading, setDeleteLoading] = useState(false)
+
+
+
+  const handleView = async (id: string) => {
+    openDetail(id)
+  }
+
+  const handleEdit = async (id: string) => {
+    openEdit(id)
+  }
+
+  const handleDelete = (id: string) => {
+    openDelete(id)
+  }
+
+
+  const confirmDelete = async () => {
+    if (!deleteId || deleteLoading) return
+
+    try {
+      setDeleteLoading(true)
+
+      const res = await fetch(`/api/jurusan/${deleteId}`, {
+        method: 'DELETE',
+      })
+
+      const json = await res.json()
+
+      if (!res.ok) {
+        throw new Error(json.message || 'Gagal menghapus jurusan')
+      }
+
+      toast.success('Jurusan berhasil dihapus')
+
+      // langsung hilang dari UI
+      removeLocal(deleteId)
+
+      setDeleteOpen(false)
+
+      // optional: sinkronisasi ulang
+      await refetch()
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Terjadi kesalahan'
+
+      toast.error(message)
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
+
+
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6'>
@@ -45,6 +127,28 @@ const Page = () => {
             onSuccess={() => {
               window.location.reload()
             }}
+          />
+
+          <DetailJurusanModal
+            open={detailOpen}
+            onOpenChange={setDetailOpen}
+            id={detailId}
+          />
+
+
+          <EditJurusanModal
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            id={editId}
+            onSuccess={refetch}
+          />
+
+
+          <DeleteJurusanModal
+            open={deleteOpen}
+            onOpenChange={setDeleteOpen}
+            loading={deleteLoading}
+            onConfirm={confirmDelete}
           />
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -107,6 +211,9 @@ const Page = () => {
           limit={limit}
           totalPages={totalPages}
           onPageChange={setPage}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
         />
 
       </div>
@@ -115,3 +222,4 @@ const Page = () => {
 }
 
 export default Page
+

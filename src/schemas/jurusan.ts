@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const createJurusanSchema = z.object({
+export const createJurusanSchema = z.object({
   nama: z
     .string()
     .min(3, 'Nama minimal 3 karakter')
@@ -25,5 +25,8 @@ const createJurusanSchema = z.object({
     .max(300)
     .trim(),
 })
+
+export const updateJurusanSchema =
+  createJurusanSchema.partial()
 
 export default createJurusanSchema
