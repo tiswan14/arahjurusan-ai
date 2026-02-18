@@ -7,12 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  user
+  admin
+}
+
 model User {
   id        String   @id @default(cuid())
   nama      String
   email     String   @unique
   password  String
-  role      String   @default("user")
+  role      Role     @default(user)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -20,15 +25,50 @@ model User {
 }
 
 model Jurusan {
-  id           String   @id @default(cuid())
-  nama         String
-  slug         String   @unique
-  alias        String   @unique
-  deskripsi    String
-  prospekKerja String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String          @id @default(cuid())
+  nama           String
+  slug           String          @unique
+  alias          String          @unique
+  deskripsi      String
+  prospekKerja   String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  jurusanWeights JurusanWeight[]
 
   @@index([nama])
   @@map("jurusan")
+}
+
+enum Dimensi {
+  logika
+  numerik
+  kreatif
+  sosial
+  teknis
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  text      String
+  dimensi   Dimensi
+  urutan    Int      @unique
+  aktif     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([dimensi])
+  @@map("questions")
+}
+
+model JurusanWeight {
+  id        String  @id @default(cuid())
+  jurusanId String
+  dimensi   Dimensi
+  bobot     Float
+
+  jurusan Jurusan @relation(fields: [jurusanId], references: [id])
+
+  @@unique([jurusanId, dimensi])
+  @@index([dimensi])
+  @@map("jurusan_weights")
 }

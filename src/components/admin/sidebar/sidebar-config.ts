@@ -4,6 +4,8 @@ import {
   GraduationCap,
   FileText,
   Settings,
+  BarChart3,
+  ClipboardList,
 } from 'lucide-react'
 
 import type { SidebarItemConfig } from './sidebar.types'
@@ -25,9 +27,20 @@ export const adminSidebar: SidebarItemConfig[] = [
     icon: GraduationCap,
   },
   {
-    name: 'Tes Minat',
-    href: '/dashboard/tes',
+    name: 'Bobot Jurusan',
+    href: '/dashboard/weights',
+    icon: BarChart3,
+  },
+  {
+    name: 'Soal',
+    href: '/dashboard/questions',
     icon: FileText,
+  },
+
+  {
+    name: 'Hasil Tes',
+    href: '/dashboard/results',
+    icon: ClipboardList,
   },
   {
     name: 'Pengaturan',
@@ -35,3 +48,4 @@ export const adminSidebar: SidebarItemConfig[] = [
     icon: Settings,
   },
 ]
+

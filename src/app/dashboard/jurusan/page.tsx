@@ -39,6 +39,8 @@ const Page = () => {
     sortBy,
     order,
   )
+  const [deleteName, setDeleteName] = useState<string>('')
+
 
   const {
     createOpen,
@@ -70,9 +72,11 @@ const Page = () => {
     openEdit(id)
   }
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string, nama: string) => {
+    setDeleteName(nama)
     openDelete(id)
   }
+
 
 
   const confirmDelete = async () => {
@@ -149,6 +153,7 @@ const Page = () => {
             onOpenChange={setDeleteOpen}
             loading={deleteLoading}
             onConfirm={confirmDelete}
+            nama={deleteName}
           />
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
