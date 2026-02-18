@@ -1,8 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { format } from 'date-fns'
-import { id as localeID } from 'date-fns/locale'
 import {
   Table,
   TableBody,
@@ -18,9 +16,13 @@ import {
   Sparkles,
   BookOpen,
   Hash,
-  CalendarDays,
+  Eye,
+  Pencil,
+  Trash2,
 } from 'lucide-react'
 import { Pagination } from './pagination'
+import { format } from 'date-fns'
+import { id } from 'date-fns/locale'
 
 export type Jurusan = {
   id: string
@@ -37,7 +39,11 @@ type Props = {
   limit: number
   totalPages: number
   onPageChange: (page: number) => void
+  onView: (id: string) => void
+  onEdit: (id: string) => void
+  onDelete: (id: string) => void
 }
+
 
 export const JurusanTable = ({
   data,
@@ -46,6 +52,9 @@ export const JurusanTable = ({
   limit,
   totalPages,
   onPageChange,
+  onView,
+  onEdit,
+  onDelete,
 }: Props) => {
   return (
     <div className='bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/20 overflow-hidden backdrop-blur-sm'>
@@ -79,9 +88,13 @@ export const JurusanTable = ({
               </TableHead>
               <TableHead className='py-4'>
                 <div className='flex items-center gap-1 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
-                  <CalendarDays className='w-3.5 h-3.5' />
                   <span>Dibuat</span>
                 </div>
+              </TableHead>
+              <TableHead className='text-center pl-8'>
+                <span className='text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  Aksi
+                </span>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -176,21 +189,45 @@ export const JurusanTable = ({
                         : item.deskripsi}
                     </p>
                   </TableCell>
-
                   <TableCell className='py-4'>
-                    <div className='flex items-center gap-2 text-sm text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg w-fit group-hover:bg-white transition-colors duration-200'>
-                      <CalendarDays className='w-4 h-4 text-slate-400' />
-                      <span>
-                        {item.createdAt
-                          ? format(
-                            new Date(item.createdAt),
-                            'dd MMM yyyy',
-                            { locale: localeID }
-                          )
-                          : '-'}
-                      </span>
+                    <span className='text-sm text-slate-500'>
+                      {item.createdAt
+                        ? format(new Date(item.createdAt), 'dd MMM yyyy', {
+                          locale: id,
+                        })
+                        : '-'}
+                    </span>
+                  </TableCell>
+                  <TableCell className='py-4 text-right'>
+                    <div className='flex items-center justify-end gap-2'>
+
+                      {/* Lihat */}
+                      <button
+                        onClick={() => onView(item.id)}
+                        className='cursor-pointer p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition'
+                      >
+                        <Eye className='w-4 h-4' />
+                      </button>
+
+                      {/* Edit */}
+                      <button
+                        onClick={() => onEdit(item.id)}
+                        className='cursor-pointer p-2 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 transition'
+                      >
+                        <Pencil className='w-4 h-4' />
+                      </button>
+
+                      {/* Hapus */}
+                      <button
+                        onClick={() => onDelete(item.id)}
+                        className='cursor-pointer p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition'
+                      >
+                        <Trash2 className='w-4 h-4' />
+                      </button>
+
                     </div>
                   </TableCell>
+
                 </motion.tr>
               ))}
           </TableBody>

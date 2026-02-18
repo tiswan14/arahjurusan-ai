@@ -1,5 +1,87 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import createJurusanSchema from '@/schemas/jurusan'
+
+const generateSlug = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+
+export const POST = async (req: NextRequest) => {
+  try {
+    const body = await req.json()
+
+    const parsed = createJurusanSchema.safeParse(body)
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: parsed.error.issues[0].message,
+        },
+        { status: 400 },
+      )
+    }
+
+    const { nama, alias, deskripsi, prospekKerja } = parsed.data
+
+    const slug = generateSlug(nama)
+    const normalizedAlias = alias.toUpperCase()
+
+    const existingSlug = await prisma.jurusan.findUnique({
+      where: { slug },
+    })
+
+    if (existingSlug) {
+      return NextResponse.json(
+        { success: false, message: 'Slug sudah digunakan' },
+        { status: 409 },
+      )
+    }
+
+    const existingAlias = await prisma.jurusan.findUnique({
+      where: { alias: normalizedAlias },
+    })
+
+    if (existingAlias) {
+      return NextResponse.json(
+        { success: false, message: 'Alias sudah digunakan' },
+        { status: 409 },
+      )
+    }
+
+    const jurusan = await prisma.jurusan.create({
+      data: {
+        nama,
+        slug,
+        alias: normalizedAlias,
+        deskripsi,
+        prospekKerja,
+      },
+    })
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: jurusan,
+      },
+      { status: 201 },
+    )
+  } catch (error) {
+    console.error('[POST_JURUSAN_ERROR]', error)
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Terjadi kesalahan saat membuat jurusan',
+      },
+      { status: 500 },
+    )
+  }
+}
+
 
 export const GET = async (req: NextRequest) => {
   try {
@@ -92,3 +174,5 @@ export const GET = async (req: NextRequest) => {
     )
   }
 }
+
+
