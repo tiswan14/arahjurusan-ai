@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 export type JurusanWeight = {
   id: string
@@ -24,27 +24,29 @@ export const useJurusanWeight = (jurusanId?: string) => {
   const [loading, setLoading] = useState(false)
 
   const fetchData = useCallback(async () => {
-    if (!jurusanId) return
-
     try {
       setLoading(true)
 
+      const url = jurusanId
+        ? `/api/jurusan-weights?jurusanId=${jurusanId}`
+        : '/api/jurusan-weights'
+
       const [weightRes, dimensiRes] =
         await Promise.all([
-          fetch(
-            `/api/jurusan-weights?jurusanId=${jurusanId}`,
-            { credentials: 'include' },
-          ),
+          fetch(url, {
+            credentials: 'include',
+          }),
           fetch('/api/questions/dimensi'),
         ])
 
-      const weightJson = await weightRes.json()
-      const dimensiJson = await dimensiRes.json()
-
       if (!weightRes.ok) {
-        console.error(weightJson)
+        const error = await weightRes.json()
+        console.error(error)
         return
       }
+
+      const weightJson = await weightRes.json()
+      const dimensiJson = await dimensiRes.json()
 
       if (dimensiRes.ok) {
         setDimensi(dimensiJson.data ?? [])
@@ -58,12 +60,13 @@ export const useJurusanWeight = (jurusanId?: string) => {
     }
   }, [jurusanId])
 
+
   useEffect(() => {
     fetchData()
   }, [fetchData])
 
-  const grouped: GroupedJurusanWeight[] =
-    Object.values(
+  const grouped = useMemo(() => {
+    return Object.values(
       raw.reduce((acc, item) => {
         const id = item.jurusan.id
 
@@ -81,6 +84,7 @@ export const useJurusanWeight = (jurusanId?: string) => {
         return acc
       }, {} as Record<string, GroupedJurusanWeight>),
     )
+  }, [raw])
 
   return {
     data: grouped,

@@ -90,4 +90,28 @@ export const jurusanWeightRepository = {
       where: { jurusanId },
     })
   },
+
+  findAll() {
+    return prisma.jurusanWeight.findMany({
+      orderBy: [
+        {
+          jurusan: {
+            nama: 'asc',
+          },
+        },
+        {
+          dimensi: 'asc',
+        },
+      ],
+      include: {
+        jurusan: {
+          select: {
+            id: true,
+            nama: true,
+          },
+        },
+      },
+    })
+  },
+
 }

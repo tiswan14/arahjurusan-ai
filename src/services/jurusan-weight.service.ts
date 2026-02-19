@@ -98,4 +98,9 @@ export const jurusanWeightService = {
 
     return true
   },
+
+  async getAll() {
+    return jurusanWeightRepository.findAll()
+  },
+
 }

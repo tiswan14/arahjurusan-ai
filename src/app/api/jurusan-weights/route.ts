@@ -32,22 +32,12 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url)
-
     const jurusanId =
-      searchParams.get('jurusanId')
+      req.nextUrl.searchParams.get('jurusanId')
 
-    if (!jurusanId) {
-      return NextResponse.json(
-        { message: 'jurusanId wajib diisi' },
-        { status: 400 },
-      )
-    }
-
-    const data =
-      await jurusanWeightService.getByJurusan(
-        jurusanId,
-      )
+    const data = jurusanId
+      ? await jurusanWeightService.getByJurusan(jurusanId)
+      : await jurusanWeightService.getAll()
 
     return NextResponse.json(
       { data },
