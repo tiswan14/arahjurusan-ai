@@ -5,8 +5,21 @@ import { adminSidebar } from './sidebar-config'
 import SidebarItem from './sidebar-item'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { useAuth } from '@/context/auth-context'
 
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+}
 export default function Sidebar() {
+
+  const { user, loading, logout } = useAuth()
+  if (loading || !user) return null
+
+
   return (
     <aside className='fixed left-0 top-0 h-screen w-64 border-r border-border bg-background flex flex-col'>
 
@@ -44,12 +57,37 @@ export default function Sidebar() {
       </div>
 
       {/* Footer */}
-      <div className='px-6 py-4'>
-        <Separator className='mb-3' />
-        <p className='text-xs text-muted-foreground'>
-          © {new Date().getFullYear()} ArahJurusan
-        </p>
+      <div className='mt-auto px-4 py-4'>
+        <Separator className='mb-4 bg-white/10' />
+
+        <div className='space-y-5'>
+          {/* User Info */}
+          <div className='flex items-center gap-3'>
+            <div className='flex h-10 w-10 items-center justify-center rounded-full bg-[#2563eb] text-sm font-semibold text-white'>
+              {getInitials(user.nama)}
+            </div>
+
+            <div className='flex flex-col'>
+              <span className='text-sm font-medium text-white'>
+                {user.nama}
+              </span>
+              <span className='text-xs capitalize text-white/60'>
+                {user.role}
+              </span>
+            </div>
+          </div>
+
+          {/* Logout Button */}
+          <button
+            onClick={logout}
+            className='cursor-pointer w-full rounded-md bg-red-500 px-3 py-2 text-xs font-medium text-white transition hover:bg-red-600'
+          >
+            Logout
+          </button>
+        </div>
       </div>
+
+
 
     </aside>
   )
