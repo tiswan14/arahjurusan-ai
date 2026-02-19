@@ -39,6 +39,7 @@ export const useQuestion = (
   search: string,
   sortBy: 'createdAt' | 'urutan' | 'text',
   order: 'asc' | 'desc',
+  dimensi?: string,
 ) => {
   const [data, setData] = useState<Question[]>([])
   const [loading, setLoading] = useState(false)
@@ -72,6 +73,11 @@ export const useQuestion = (
       if (search.trim()) {
         params.set('search', search.trim())
       }
+
+      if (dimensi) {
+        params.set('dimensi', dimensi)
+      }
+
 
       const res = await fetch(
         `/api/questions?${params.toString()}`,
@@ -113,7 +119,7 @@ export const useQuestion = (
     } finally {
       setLoading(false)
     }
-  }, [page, limit, search, sortBy, order])
+  }, [page, limit, search, sortBy, order, dimensi])
 
   useEffect(() => {
     fetchData()

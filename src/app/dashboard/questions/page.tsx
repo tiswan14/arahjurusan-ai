@@ -6,9 +6,10 @@ import { useQuestion } from '@/components/admin/question/use-question'
 import { QuestionTable } from '@/components/admin/question/table'
 import { QuestionToolbar } from '@/components/admin/question/toolbar'
 import { Button } from '@/components/ui/button'
-import { DetailQuestionModal } from '@/components/admin/question/modal/detail-modal'
-import { EditQuestionModal } from '@/components/admin/question/modal/edit-modal'
-import { DeleteQuestionModal } from '@/components/admin/question/modal/delete-modal'
+import { DetailQuestionModal } from '@/components/admin/question/detail-modal'
+import { EditQuestionModal } from '@/components/admin/question/edit-modal'
+import { DeleteQuestionModal } from '@/components/admin/question/delete-modal'
+import { CreateQuestionModal } from '@/components/admin/question/create-modal'
 
 const Page = () => {
   const [page, setPage] = useState<number>(1)
@@ -20,7 +21,10 @@ const Page = () => {
   const [editId, setEditId] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [dimensi, setDimensi] =
+    useState<string | undefined>()
 
+  const [createOpen, setCreateOpen] = useState(false)
 
 
   const [sortBy, setSortBy] = useState<
@@ -43,7 +47,9 @@ const Page = () => {
     search,
     sortBy,
     order,
+    dimensi,
   )
+
 
 
   const handleView = (id: string) => {
@@ -89,6 +95,7 @@ const Page = () => {
             </div>
 
             <Button
+              onClick={() => setCreateOpen(true)}
               className='h-11 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2'
             >
               <Plus className='w-4 h-4' />
@@ -114,8 +121,10 @@ const Page = () => {
           id={editId}
           onSuccess={() => {
             setEditOpen(false)
+            refetch()
           }}
         />
+
 
         <DeleteQuestionModal
           open={deleteOpen}
@@ -127,10 +136,25 @@ const Page = () => {
           }}
         />
 
+        <CreateQuestionModal
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          onSuccess={() => {
+            setCreateOpen(false)
+            refetch()
+          }}
+        />
+
+
 
         {/* Toolbar */}
         <QuestionToolbar
           search={search}
+          dimensi={dimensi}
+          onDimensiChange={value => {
+            setPage(1)
+            setDimensi(value)
+          }}
           onSearchChange={value => {
             setPage(1)
             setSearch(value)
@@ -143,6 +167,7 @@ const Page = () => {
             setOrder(direction)
           }}
         />
+
 
         {/* Table */}
         <QuestionTable

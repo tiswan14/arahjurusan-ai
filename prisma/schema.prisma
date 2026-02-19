@@ -6,10 +6,17 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
-
 enum Role {
   user
   admin
+}
+
+enum Dimensi {
+  logika
+  numerik
+  kreatif
+  sosial
+  teknis
 }
 
 model User {
@@ -39,12 +46,17 @@ model Jurusan {
   @@map("jurusan")
 }
 
-enum Dimensi {
-  logika
-  numerik
-  kreatif
-  sosial
-  teknis
+model JurusanWeight {
+  id        String  @id @default(cuid())
+  jurusanId String
+  dimensi   Dimensi
+  bobot     Float
+
+  jurusan Jurusan @relation(fields: [jurusanId], references: [id])
+
+  @@unique([jurusanId, dimensi])
+  @@index([dimensi])
+  @@map("jurusan_weights")
 }
 
 model Question {
@@ -60,15 +72,4 @@ model Question {
   @@map("questions")
 }
 
-model JurusanWeight {
-  id        String  @id @default(cuid())
-  jurusanId String
-  dimensi   Dimensi
-  bobot     Float
 
-  jurusan Jurusan @relation(fields: [jurusanId], references: [id])
-
-  @@unique([jurusanId, dimensi])
-  @@index([dimensi])
-  @@map("jurusan_weights")
-}

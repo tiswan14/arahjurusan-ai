@@ -26,6 +26,7 @@ export const questionRepository = {
     })
   },
 
+
   findByUrutan(urutan: number) {
     return prisma.question.findUnique({
       where: { urutan },
@@ -52,11 +53,7 @@ export const questionRepository = {
       order = 'desc',
     } = params
 
-    const safePage = page > 0 ? page : 1
-    const safeLimit =
-      limit > 0 && limit <= 50 ? limit : 10
-
-    const skip = (safePage - 1) * safeLimit
+    const skip = (page - 1) * limit
 
     const where: Prisma.QuestionWhereInput = {
       ...(aktif !== undefined && { aktif }),
@@ -75,7 +72,7 @@ export const questionRepository = {
           [orderBy]: order,
         },
         skip,
-        take: safeLimit,
+        take: limit,
         select: baseSelect,
       }),
       prisma.question.count({ where }),
@@ -86,6 +83,7 @@ export const questionRepository = {
       total,
     }
   },
+
 
 
   updateById(
@@ -105,4 +103,20 @@ export const questionRepository = {
       select: { id: true },
     })
   },
+
+  async findDistinctDimensi() {
+    const result =
+      await prisma.question.findMany({
+        distinct: ['dimensi'],
+        select: {
+          dimensi: true,
+        },
+        where: {
+          aktif: true,
+        },
+      })
+
+    return result.map(item => item.dimensi)
+  }
+
 }

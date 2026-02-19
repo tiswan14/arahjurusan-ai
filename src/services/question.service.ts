@@ -68,10 +68,13 @@ export const questionService = {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(
+          total / limit,
+        ),
       },
     }
   },
+
 
   async findById(id: string) {
 /*************  ✨ Windsurf Command ⭐  *************/
@@ -138,4 +141,9 @@ export const questionService = {
 
     return true
   },
+
+  async getDimensiList() {
+    return questionRepository.findDistinctDimensi()
+  }
+
 }

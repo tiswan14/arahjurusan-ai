@@ -17,6 +17,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { toast } from 'react-toastify'
 
 type Props = {
   open: boolean
@@ -56,7 +57,7 @@ export const EditQuestionModal = ({
   }, [open, id])
 
   const handleSubmit = async () => {
-    if (!id) return
+    if (!id || loading) return
 
     try {
       setLoading(true)
@@ -77,14 +78,25 @@ export const EditQuestionModal = ({
       const json = await res.json()
 
       if (!res.ok) {
-        throw new Error(json.message)
+        throw new Error(json.message || 'Gagal memperbarui soal')
       }
 
+      toast.success('Soal berhasil diperbarui')
+
       onSuccess()
+      onOpenChange(false)
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Terjadi kesalahan'
+
+      toast.error(message)
     } finally {
       setLoading(false)
     }
   }
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

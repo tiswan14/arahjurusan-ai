@@ -7,12 +7,12 @@ import { useJurusan } from '@/components/admin/jurusan/use-jurusan'
 import { JurusanTable } from '@/components/admin/jurusan/table'
 import { JurusanToolbar } from '@/components/admin/jurusan/toolbar'
 import { Button } from '@/components/ui/button'
-import { CreateJurusanModal } from '@/components/admin/jurusan/modal/create-modal'
-import { DetailJurusanModal } from '@/components/admin/jurusan/modal/detail-modal'
-import { EditJurusanModal } from '@/components/admin/jurusan/modal/edit-modal'
-import { DeleteJurusanModal } from '@/components/admin/jurusan/modal/delete-modal'
+import { CreateJurusanModal } from '@/components/admin/jurusan/create-modal'
+import { DetailJurusanModal } from '@/components/admin/jurusan/detail-modal'
+import { EditJurusanModal } from '@/components/admin/jurusan/edit-modal'
+import { DeleteJurusanModal } from '@/components/admin/jurusan/delete-modal'
 import { toast } from 'react-toastify'
-import { useJurusanModals } from '@/components/admin/jurusan/modal/use-jurusan-modals'
+import { useJurusanModals } from '@/components/admin/jurusan/use-jurusan-modals'
 
 const Page = () => {
   const [open, setOpen] = useState(false)

@@ -8,6 +8,7 @@ import {
   ArrowUpDown,
   ArrowUpAZ,
   ArrowDownZA,
+  ListOrdered,
 } from 'lucide-react'
 import {
   Select,
@@ -16,6 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useEffect, useState } from 'react'
+import type { Dimensi } from '@prisma/client'
+
 
 type SortField =
   | 'createdAt'
@@ -24,6 +28,10 @@ type SortField =
 
 type Props = {
   search: string
+  dimensi?: string
+  onDimensiChange: (
+    value?: string,
+  ) => void
   onSearchChange: (value: string) => void
   sortBy: SortField
   order: 'asc' | 'desc'
@@ -35,11 +43,26 @@ type Props = {
 
 export const QuestionToolbar = ({
   search,
+  dimensi,
+  onDimensiChange,
   onSearchChange,
   sortBy,
   order,
   onSortChange,
 }: Props) => {
+  const [dimensiList, setDimensiList] = useState<Dimensi[]>([])
+  useEffect(() => {
+    const fetchDimensi = async () => {
+      const res = await fetch('/api/questions/dimensi')
+      const json: { data: Dimensi[] } =
+        await res.json()
+
+      setDimensiList(json.data)
+    }
+
+    fetchDimensi()
+  }, [])
+
   return (
     <div className='mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
 
@@ -58,6 +81,38 @@ export const QuestionToolbar = ({
           className='pl-11 pr-4 h-11 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 shadow-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all'
         />
       </div>
+      {/* Filter Dimensi */}
+      <Select
+        value={dimensi ?? 'all'}
+        onValueChange={value =>
+          onDimensiChange(
+            value === 'all'
+              ? undefined
+              : (value as Dimensi),
+          )
+        }
+      >
+        <SelectTrigger className='w-full sm:w-[220px] h-11 rounded-xl bg-white border border-slate-200 shadow-sm hover:border-slate-300 focus:ring-2 focus:ring-slate-200 transition'>
+          <SelectValue placeholder='Filter Dimensi' />
+        </SelectTrigger>
+
+        <SelectContent className='rounded-xl border border-slate-200 bg-white shadow-lg p-1'>
+          <SelectItem value='all'>
+            Semua Dimensi
+          </SelectItem>
+
+          {dimensiList.map(item => (
+            <SelectItem
+              key={item}
+              value={item}
+            >
+              {item}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+
 
       {/* Sort */}
       <Select
@@ -102,6 +157,29 @@ export const QuestionToolbar = ({
               <span>Terlama</span>
             </div>
           </SelectItem>
+
+          {/* Urutan Naik */}
+          <SelectItem
+            value='urutan-asc'
+            className='rounded-lg focus:bg-emerald-50 data-[state=checked]:bg-emerald-50 data-[state=checked]:text-emerald-700'
+          >
+            <div className='flex items-center gap-3'>
+              <ListOrdered className='w-4 h-4 text-emerald-600' />
+              <span>Urutan Naik</span>
+            </div>
+          </SelectItem>
+
+          {/* Urutan Turun */}
+          <SelectItem
+            value='urutan-desc'
+            className='rounded-lg focus:bg-purple-50 data-[state=checked]:bg-purple-50 data-[state=checked]:text-purple-700'
+          >
+            <div className='flex items-center gap-3'>
+              <ListOrdered className='w-4 h-4 text-purple-600' />
+              <span>Urutan Turun</span>
+            </div>
+          </SelectItem>
+
 
           {/* Text A-Z */}
           <SelectItem
