@@ -17,12 +17,21 @@ import {
   Loader2,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { getJurusanDetail } from '@/features/jurusan'
 
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   id: string | null
 }
+
+type JurusanDetail = {
+  nama: string
+  alias: string
+  deskripsi: string
+  prospekKerja: string
+}
+
 
 const Section = ({
   icon: Icon,
@@ -50,35 +59,42 @@ export const DetailJurusanModal = ({
   id,
 }: Props) => {
 
-  const [data, setData] = useState<{
-    nama: string
-    alias: string
-    deskripsi: string
-    prospekKerja: string
-  } | null>(null)
+  const [data, setData] = useState<JurusanDetail | null>(null)
+
 
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!open || !id) return
 
+    let isMounted = true
+
     const fetchDetail = async () => {
       try {
         setLoading(true)
-
-        const res = await fetch(`/api/jurusan/${id}`)
-        const json = await res.json()
-
-        if (json.success) {
-          setData(json.data)
+        const detail = await getJurusanDetail(id)
+        if (isMounted) {
+          setData(detail)
         }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchDetail()
+
+    return () => {
+      isMounted = false
+    }
   }, [open, id])
+
+  useEffect(() => {
+    if (!open) {
+      setData(null)
+    }
+  }, [open])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
