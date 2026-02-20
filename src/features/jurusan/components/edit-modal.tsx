@@ -21,6 +21,7 @@ import {
   X,
 } from 'lucide-react'
 import { toast } from 'react-toastify'
+import { getJurusanDetail, updateJurusan } from '@/features/jurusan'
 
 type Props = {
   open: boolean
@@ -47,6 +48,21 @@ const Field = ({
   </div>
 )
 
+
+type JurusanForm = {
+  nama: string
+  alias: string
+  deskripsi: string
+  prospekKerja: string
+}
+
+const EMPTY_FORM: JurusanForm = {
+  nama: '',
+  alias: '',
+  deskripsi: '',
+  prospekKerja: '',
+}
+
 export const EditJurusanModal = ({
   open,
   onOpenChange,
@@ -54,23 +70,9 @@ export const EditJurusanModal = ({
   onSuccess,
 }: Props) => {
   const [loading, setLoading] = useState(false)
-
-  const [form, setForm] = useState({
-    nama: '',
-    alias: '',
-    deskripsi: '',
-    prospekKerja: '',
-  })
-
+  const [form, setForm] = useState<JurusanForm>(EMPTY_FORM)
+  const [initialForm, setInitialForm] = useState<JurusanForm>(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
-
-  const [initialForm, setInitialForm] = useState({
-    nama: '',
-    alias: '',
-    deskripsi: '',
-    prospekKerja: '',
-  })
-
 
   useEffect(() => {
     if (!open || !id) return
@@ -79,19 +81,24 @@ export const EditJurusanModal = ({
       try {
         setLoading(true)
 
-        const res = await fetch(`/api/jurusan/${id}`)
-        const json = await res.json()
+        const data = await getJurusanDetail(id)
 
-        if (json.success) {
-          const initial = {
-            nama: json.data.nama,
-            alias: json.data.alias,
-            deskripsi: json.data.deskripsi,
-            prospekKerja: json.data.prospekKerja,
-          }
+        setForm({
+          nama: data.nama,
+          alias: data.alias,
+          deskripsi: data.deskripsi,
+          prospekKerja: data.prospekKerja,
+        })
 
-          setForm(initial)
-          setInitialForm(initial)
+        setInitialForm({
+          nama: data.nama,
+          alias: data.alias,
+          deskripsi: data.deskripsi,
+          prospekKerja: data.prospekKerja,
+        })
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error(error)
         }
       } finally {
         setLoading(false)
@@ -108,8 +115,6 @@ export const EditJurusanModal = ({
     form.deskripsi !== initialForm.deskripsi ||
     form.prospekKerja !== initialForm.prospekKerja
 
-
-
   const handleChange = (
     field: keyof typeof form,
     value: string,
@@ -122,32 +127,22 @@ export const EditJurusanModal = ({
 
   const handleSubmit = async () => {
     if (!id) return
+
     try {
       setSubmitting(true)
 
-      const res = await fetch(`/api/jurusan/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(form),
-      })
-
-      const json = await res.json()
-
-      if (!res.ok || !json.success) {
-        toast.error(json?.message || 'Gagal update')
-        return
-      }
+      await updateJurusan(id, form)
 
       toast.success('Jurusan berhasil diperbarui')
 
-      // kasih delay biar toast kelihatan
       onSuccess()
       onOpenChange(false)
     } catch (error) {
-      toast.error('Terjadi kesalahan pada server')
-      console.error('PATCH_JURUSAN_ERROR', error)
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Terjadi kesalahan pada server',
+      )
     } finally {
       setSubmitting(false)
     }
