@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import {
   Dialog,
@@ -13,11 +13,26 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { X, Loader2, Save } from 'lucide-react'
+import { createJurusan } from '@/features/jurusan'
 
 type Props = {
   open: boolean
   onOpenChange: (value: boolean) => void
-  onSuccess: () => void
+  onSuccess: () => Promise<void> | void
+}
+
+type FormState = {
+  nama: string
+  alias: string
+  deskripsi: string
+  prospekKerja: string
+}
+
+const initialState: FormState = {
+  nama: '',
+  alias: '',
+  deskripsi: '',
+  prospekKerja: '',
 }
 
 export const CreateJurusanModal = ({
@@ -25,49 +40,47 @@ export const CreateJurusanModal = ({
   onOpenChange,
   onSuccess,
 }: Props) => {
-  const [nama, setNama] = useState('')
-  const [alias, setAlias] = useState('')
-  const [deskripsi, setDeskripsi] = useState('')
-  const [prospekKerja, setProspekKerja] = useState('')
+  const [form, setForm] = useState<FormState>(initialState)
   const [loading, setLoading] = useState(false)
 
-  const resetForm = () => {
-    setNama('')
-    setAlias('')
-    setDeskripsi('')
-    setProspekKerja('')
+  const handleChange = (
+    field: keyof FormState,
+    value: string,
+  ) => {
+    setForm(prev => ({
+      ...prev,
+      [field]: value,
+    }))
   }
+
+
+  const resetForm = () => {
+    setForm(initialState)
+  }
+
 
   const handleSubmit = async () => {
     if (loading) return
 
-    setLoading(true)
+    if (!form.nama.trim()) {
+      toast.error('Nama jurusan wajib diisi')
+      return
+    }
 
     try {
-      const res = await fetch('/api/jurusan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          nama,
-          alias,
-          deskripsi,
-          prospekKerja,
-        }),
-      })
-
-      const json = await res.json()
-
-      if (!res.ok) {
-        throw new Error(json.message || 'Gagal membuat jurusan')
+      setLoading(true)
+      const sanitizedForm = {
+        ...form,
+        nama: form.nama.trim(),
+        alias: form.alias.trim(),
       }
+      await createJurusan(sanitizedForm)
 
       toast.success('Jurusan berhasil ditambahkan')
 
       resetForm()
       onOpenChange(false)
-      onSuccess()
+      await onSuccess()
     } catch (error) {
       const message =
         error instanceof Error
@@ -80,15 +93,18 @@ export const CreateJurusanModal = ({
     }
   }
 
+  useEffect(() => {
+    if (!open) {
+      resetForm()
+    }
+  }, [open])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className='sm:max-w-lg bg-white border border-gray-100 shadow-xl backdrop-blur-sm'
-      >
+      <DialogContent className='sm:max-w-lg bg-white border border-gray-100 shadow-xl backdrop-blur-sm'>
         <DialogHeader>
           <DialogTitle className='text-xl font-semibold text-gray-800'>
-            ✨ Tambah Jurusan Baru
+            Tambah Jurusan Baru
           </DialogTitle>
           <p className='text-sm text-gray-500 mt-1'>
             Lengkapi formulir berikut untuk menambahkan jurusan
@@ -102,8 +118,8 @@ export const CreateJurusanModal = ({
             </label>
             <Input
               placeholder='Contoh: Rekayasa Perangkat Lunak'
-              value={nama}
-              onChange={e => setNama(e.target.value)}
+              value={form.nama}
+              onChange={e => handleChange('nama', e.target.value)}
               className='text-black border-gray-200 focus:border-blue-400 focus:ring-blue-400 bg-gray-50/50'
             />
           </div>
@@ -114,13 +130,10 @@ export const CreateJurusanModal = ({
             </label>
             <Input
               placeholder='Contoh: RPL'
-              value={alias}
-              onChange={e => setAlias(e.target.value)}
+              value={form.alias}
+              onChange={e => handleChange('alias', e.target.value)}
               className='text-black border-gray-200 focus:border-blue-400 focus:ring-blue-400 bg-gray-50/50'
             />
-            <p className='text-xs text-gray-400'>
-              Singkatan atau kode untuk jurusan
-            </p>
           </div>
 
           <div className='space-y-2'>
@@ -129,8 +142,8 @@ export const CreateJurusanModal = ({
             </label>
             <Textarea
               placeholder='Jelaskan tentang jurusan ini...'
-              value={deskripsi}
-              onChange={e => setDeskripsi(e.target.value)}
+              value={form.deskripsi}
+              onChange={e => handleChange('deskripsi', e.target.value)}
               rows={3}
               className='border-gray-200 focus:border-blue-400 focus:ring-blue-400 bg-gray-50/50 resize-none'
             />
@@ -142,15 +155,15 @@ export const CreateJurusanModal = ({
             </label>
             <Textarea
               placeholder='Sebutkan peluang karir setelah lulus...'
-              value={prospekKerja}
-              onChange={e => setProspekKerja(e.target.value)}
+              value={form.prospekKerja}
+              onChange={e => handleChange('prospekKerja', e.target.value)}
               rows={2}
               className='border-gray-200 focus:border-blue-400 focus:ring-blue-400 bg-gray-50/50 resize-none'
             />
           </div>
         </div>
-        <DialogFooter className='mt-6 gap-2'>
 
+        <DialogFooter className='mt-6 gap-2'>
           <Button
             variant='outline'
             onClick={() => onOpenChange(false)}
@@ -163,7 +176,7 @@ export const CreateJurusanModal = ({
 
           <Button
             onClick={handleSubmit}
-            disabled={loading}
+            disabled={loading || !form.nama.trim()}
             className='flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md min-w-[120px] transition-all duration-200'
           >
             {loading ? (
@@ -178,9 +191,7 @@ export const CreateJurusanModal = ({
               </>
             )}
           </Button>
-
         </DialogFooter>
-
       </DialogContent>
     </Dialog>
   )

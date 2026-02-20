@@ -1,30 +1,37 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { GraduationCap, Plus } from 'lucide-react'
-import { useJurusan } from '@/components/admin/jurusan/use-jurusan'
-import { JurusanTable } from '@/components/admin/jurusan/table'
-import { JurusanToolbar } from '@/components/admin/jurusan/toolbar'
 import { Button } from '@/components/ui/button'
-import { CreateJurusanModal } from '@/components/admin/jurusan/create-modal'
-import { DetailJurusanModal } from '@/components/admin/jurusan/detail-modal'
-import { EditJurusanModal } from '@/components/admin/jurusan/edit-modal'
-import { DeleteJurusanModal } from '@/components/admin/jurusan/delete-modal'
-import { toast } from 'react-toastify'
-import { useJurusanModals } from '@/components/admin/jurusan/use-jurusan-modals'
+import {
+  useJurusan,
+  useDeleteJurusan,
+  useJurusanModals,
+  JurusanTable,
+  JurusanToolbar,
+  JurusanModals,
+} from '@/features/jurusan'
+
+type QueryState = {
+  page: number
+  limit: number
+  search: string
+  sortBy: 'createdAt' | 'nama'
+  order: 'asc' | 'desc'
+}
+
+const defaultQuery: QueryState = {
+  page: 1,
+  limit: 5,
+  search: '',
+  sortBy: 'createdAt',
+  order: 'desc',
+}
 
 const Page = () => {
   const [open, setOpen] = useState(false)
-  const [page, setPage] = useState<number>(1)
-  const [limit] = useState<number>(5)
-  const [search, setSearch] = useState<string>('')
-  const [sortBy, setSortBy] = useState<
-    'createdAt' | 'nama'
-  >('createdAt')
-  const [order, setOrder] = useState<
-    'asc' | 'desc'
-  >('desc')
+  const [deleteName, setDeleteName] = useState<string>('')
+  const [query, setQuery] = useState<QueryState>(defaultQuery)
 
   const {
     data,
@@ -33,18 +40,15 @@ const Page = () => {
     removeLocal,
     refetch,
   } = useJurusan(
-    page,
-    limit,
-    search,
-    sortBy,
-    order,
+    query.page,
+    query.limit,
+    query.search,
+    query.sortBy,
+    query.order,
   )
-  const [deleteName, setDeleteName] = useState<string>('')
 
 
   const {
-    createOpen,
-    setCreateOpen,
     detailOpen,
     detailId,
     openDetail,
@@ -54,21 +58,17 @@ const Page = () => {
     openEdit,
     setEditOpen,
     deleteOpen,
-    deleteId,
     openDelete,
     setDeleteOpen,
+    deleteId,
   } = useJurusanModals()
 
 
-  const [deleteLoading, setDeleteLoading] = useState(false)
-
-
-
-  const handleView = async (id: string) => {
+  const handleView = (id: string) => {
     openDetail(id)
   }
 
-  const handleEdit = async (id: string) => {
+  const handleEdit = (id: string) => {
     openEdit(id)
   }
 
@@ -77,85 +77,43 @@ const Page = () => {
     openDelete(id)
   }
 
-
-
-  const confirmDelete = async () => {
-    if (!deleteId || deleteLoading) return
-
-    try {
-      setDeleteLoading(true)
-
-      const res = await fetch(`/api/jurusan/${deleteId}`, {
-        method: 'DELETE',
-      })
-
-      const json = await res.json()
-
-      if (!res.ok) {
-        throw new Error(json.message || 'Gagal menghapus jurusan')
-      }
-
-      toast.success('Jurusan berhasil dihapus')
-
-      // langsung hilang dari UI
-      removeLocal(deleteId)
-
-      setDeleteOpen(false)
-
-      // optional: sinkronisasi ulang
-      await refetch()
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Terjadi kesalahan'
-
-      toast.error(message)
-    } finally {
-      setDeleteLoading(false)
-    }
+  const confirmDelete = () => {
+    if (!deleteId) return
+    remove(deleteId)
   }
 
+  const handleDeleteSuccess = useCallback(async (id: string) => {
+    removeLocal(id)
+    setDeleteOpen(false)
+    await refetch()
+  }, [removeLocal, setDeleteOpen, refetch])
+
+  const { loading: deleteLoading, remove } = useDeleteJurusan({
+    onSuccess: handleDeleteSuccess,
+  })
 
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6'>
       <div className='container mx-auto px-4 py-8 max-w-7xl'>
-
         {/* Header dengan desain lebih premium */}
         <div className="mb-8">
-
-          <CreateJurusanModal
+          <JurusanModals
             open={open}
-            onOpenChange={setOpen}
-            onSuccess={() => {
-              window.location.reload()
-            }}
+            setOpen={setOpen}
+            detailOpen={detailOpen}
+            setDetailOpen={setDetailOpen}
+            detailId={detailId}
+            editOpen={editOpen}
+            setEditOpen={setEditOpen}
+            editId={editId}
+            deleteOpen={deleteOpen}
+            setDeleteOpen={setDeleteOpen}
+            deleteLoading={deleteLoading}
+            confirmDelete={confirmDelete}
+            deleteName={deleteName}
+            refetch={refetch}
           />
-
-          <DetailJurusanModal
-            open={detailOpen}
-            onOpenChange={setDetailOpen}
-            id={detailId}
-          />
-
-
-          <EditJurusanModal
-            open={editOpen}
-            onOpenChange={setEditOpen}
-            id={editId}
-            onSuccess={refetch}
-          />
-
-
-          <DeleteJurusanModal
-            open={deleteOpen}
-            onOpenChange={setDeleteOpen}
-            loading={deleteLoading}
-            onConfirm={confirmDelete}
-            nama={deleteName}
-          />
-
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             {/* Left section dengan gradient background subtle */}
             <div className="flex items-center gap-5">
@@ -194,28 +152,39 @@ const Page = () => {
 
         {/* Toolbar dengan desain minimalis namun modern */}
         <JurusanToolbar
-          search={search}
-          onSearchChange={value => {
-            setPage(1)
-            setSearch(value)
-          }}
-          sortBy={sortBy}
-          order={order}
-          onSortChange={(field, direction) => {
-            setPage(1)
-            setSortBy(field)
-            setOrder(direction)
-          }}
+          search={query.search}
+          onSearchChange={value =>
+            setQuery(prev => ({
+              ...prev,
+              page: 1,
+              search: value,
+            }))
+          }
+          sortBy={query.sortBy}
+          order={query.order}
+          onSortChange={(field, direction) =>
+            setQuery(prev => ({
+              ...prev,
+              page: 1,
+              sortBy: field,
+              order: direction,
+            }))
+          }
         />
 
         {/* Table */}
         <JurusanTable
           data={data}
           loading={loading}
-          page={page}
-          limit={limit}
+          page={query.page}
+          limit={query.limit}
           totalPages={totalPages}
-          onPageChange={setPage}
+          onPageChange={page =>
+            setQuery(prev => ({
+              ...prev,
+              page,
+            }))
+          }
           onView={handleView}
           onEdit={handleEdit}
           onDelete={handleDelete}
